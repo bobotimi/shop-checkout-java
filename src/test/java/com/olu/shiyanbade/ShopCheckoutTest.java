@@ -87,4 +87,19 @@ public class ShopCheckoutTest {
         cost = shopCheckout.checkout(asList("apple", "apple", "apple"));
         assertThat(cost, is(equalTo(1.20)));
     }
+
+    @Test
+    public void shouldNotChargeForThirdOrangeWhenCartContainaThreeOranges() {
+        double cost = shopCheckout.checkout(asList("orange", "orange", "orange"));
+        assertThat(cost, is(equalTo(0.50)));
+    }
+
+    @Test
+    public void shouldNotChargeForEveryThirdOrangeWhenCartContainsMoreThanThreeOranges() {
+        double cost = shopCheckout.checkout(asList("orange", "orange", "orange", "orange", "orange", "orange"));
+        assertThat(cost, is(equalTo(1.00)));
+
+        cost = shopCheckout.checkout(asList("orange", "orange", "orange", "orange"));
+        assertThat(cost, is(equalTo(0.75)));
+    }
 }
