@@ -45,7 +45,7 @@ public class ShopCheckoutTest {
 
     @Test
     public void shouldReturnCostWhenShoppingCartContainsApplesOnly() {
-        double cost = shopCheckout.checkout(asList("Apple", "apple"));
+        double cost = shopCheckout.checkout(asList("Apple", "apple", "apple"));
         assertThat(cost, is(equalTo(1.2)));
     }
 
@@ -71,5 +71,20 @@ public class ShopCheckoutTest {
     public void shouldIgnoreUnknownItemsInShoppingCart() {
         double cost = shopCheckout.checkout(asList("apple", "coconut", "orange"));
         assertThat(cost, is(equalTo(0.85)));
+    }
+
+    @Test
+    public void shouldNotChargeForSecondAppleWhenCartContainsTwoApplesOnly() {
+        double cost = shopCheckout.checkout(asList("apple", "apple"));
+        assertThat(cost, is(equalTo(0.60)));
+    }
+
+    @Test
+    public void shouldNotChargeForEverySecondAppleWhenCartContainsMoreThanTwoApples() {
+        double cost = shopCheckout.checkout(asList("apple", "apple", "apple", "APPLE"));
+        assertThat(cost, is(equalTo(1.20)));
+
+        cost = shopCheckout.checkout(asList("apple", "apple", "apple"));
+        assertThat(cost, is(equalTo(1.20)));
     }
 }
