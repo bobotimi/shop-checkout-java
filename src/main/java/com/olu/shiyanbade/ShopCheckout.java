@@ -29,12 +29,12 @@ public class ShopCheckout {
                 .collect(groupingBy(String::toString, mapping(i -> i, counting())))
                 .entrySet()
                 .stream()
-                .map(this::applyDiscount)
+                .map(this::computeCost)
                 .reduce(BigDecimal::add)
                 .orElse(ZERO);
     }
 
-    private BigDecimal applyDiscount(Entry<String, Long> itemAndFrequency) {
+    private BigDecimal computeCost(Entry<String, Long> itemAndFrequency) {
         String theItem = itemAndFrequency.getKey();
         BigDecimal discountedPrice = ZERO;
         if (APPLE.equalsIgnoreCase(theItem)) {
