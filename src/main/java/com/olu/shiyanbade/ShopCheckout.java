@@ -1,50 +1,49 @@
 package com.olu.shiyanbade;
 
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import static java.math.BigDecimal.ZERO;
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.*;
 
 public class ShopCheckout {
-    public static final String APPLE = "apple";
-    public static final String ORANGE = "orange";
-    private Map<String, Double> prices;
+    private static final String APPLE = "apple";
+    private static final String ORANGE = "orange";
+    private Map<String, BigDecimal> prices;
 
-    public ShopCheckout(Map<String, Double> prices) {
+    public ShopCheckout(Map<String, BigDecimal> prices) {
         this.prices = prices;
     }
 
-    public double checkout(List<String> items) {
-        double cost = 0.0;
-        int apples = 0;
-        int oranges = 0;
-        if (items != null) {
-            for (String item : items) {
-                String priceKey = item.toLowerCase();
-                cost += prices.getOrDefault(priceKey, 0.0);
-
-                if (APPLE.equals(priceKey)) {
-                    ++apples;
-                    cost = applyAppleDiscount(cost, apples, priceKey);
-                } else if (ORANGE.equals(priceKey)) {
-                    ++oranges;
-                    cost = applyOrangeDiscount(cost, oranges, priceKey);
-                }
-            }
-        }
-        return Double.parseDouble(String.format("%.2f", cost));
+    public BigDecimal checkout(List<String> items) {
+        return ofNullable(items)
+                .orElse(emptyList())
+                .stream()
+                .map(String::toLowerCase)
+                .filter(prices::containsKey)
+                .collect(groupingBy(String::toString, mapping(i -> i, counting())))
+                .entrySet()
+                .stream()
+                .map(this::applyDiscount)
+                .reduce(BigDecimal::add)
+                .orElse(ZERO);
     }
 
-    private double applyOrangeDiscount(double cost, int oranges, String priceKey) {
-        if (oranges % 3 == 0) {
-            cost -= prices.get(priceKey);
+    private BigDecimal applyDiscount(Entry<String, Long> itemAndFrequency) {
+        String theItem = itemAndFrequency.getKey();
+        BigDecimal discountedPrice = ZERO;
+        if (APPLE.equalsIgnoreCase(theItem)) {
+            Long frequency = itemAndFrequency.getValue();
+            discountedPrice = prices.get(theItem).multiply(BigDecimal.valueOf(frequency - frequency / 2));
+        } else if (ORANGE.equalsIgnoreCase(theItem)) {
+            Long frequency = itemAndFrequency.getValue();
+            discountedPrice = prices.get(theItem).multiply(BigDecimal.valueOf(frequency - frequency / 3));
         }
-        return cost;
-    }
-
-    private double applyAppleDiscount(double cost, int apples, String priceKey) {
-        if (apples % 2 == 0) {
-            cost -= prices.get(priceKey);
-        }
-        return cost;
+        return discountedPrice;
     }
 }
